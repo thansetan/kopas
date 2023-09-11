@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <style>
+        .content {
+            white-space: pre-line;
+            border: 2px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Title: {{.title}}</h1>
+    <button onclick="copyToClipboard()">Copy</button>
+    <h1>Content: </h1>
+    <div class="content" id="content">{{.content}}</div>
+
+    <script>
+        function copyToClipboard() {
+            let content = document.getElementById("content")
+            let textToCopy = content.innerText
+
+            let textarea = document.createElement("textarea")
+            textarea.value = textToCopy
+            document.body.appendChild(textarea)
+
+            textarea.select()
+            document.execCommand("copy")
+
+            document.body.removeChild(textarea)
+            window.alert("copied!")
+        }
+    </script>
+</body>
+
+</html>

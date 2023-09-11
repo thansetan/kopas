@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/joho/godotenv"
 	"github.com/thansetan/kopas/internal/infrastructure/database"
+	httproute "github.com/thansetan/kopas/internal/infrastructure/http"
 	"github.com/thansetan/kopas/pkg/helpers"
 )
 
@@ -19,4 +20,6 @@ func main() {
 	}
 	defer db.Close()
 
+	r := httproute.NewRoute(db)
+	r.Run()
 }
