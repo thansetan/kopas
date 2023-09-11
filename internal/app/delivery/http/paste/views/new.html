@@ -17,6 +17,16 @@
             <textarea id="content" name="content" rows="4" cols="50" required></textarea>
         </div>
         <div>
+            <label for="expires_at">Expired in:</label>
+            <select name="expires_at" id="expires_at">
+                <option value="minute">10 Minutes</option>
+                <option value="hour">1 Hour</option>
+                <option value="day">1 Day</option>
+                <option value="week">1 Week</option>
+                <option value="never">Never</option>
+            </select>
+        </div>
+        <div>
             <input type="submit" value="Create">
         </div>
     </form>

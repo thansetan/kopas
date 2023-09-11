@@ -25,7 +25,7 @@ func NewPasteHandler(uc pasteusecase.PasteUsecase) PasteHandler {
 }
 
 func (h *pasteHandler) InsertPaste(c *gin.Context) {
-	var pasteData pastedto.Paste
+	var pasteData pastedto.PasteReq
 	err := c.ShouldBind(&pasteData)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
@@ -65,8 +65,9 @@ func (h *pasteHandler) GetPasteByID(c *gin.Context) {
 		})
 	default:
 		c.HTML(http.StatusOK, "paste.html", gin.H{
-			"title":   data.Title,
-			"content": data.Content,
+			"title":     data.Title,
+			"content":   data.Content,
+			"expiresAt": data.ExpiresAt,
 		})
 	}
 }

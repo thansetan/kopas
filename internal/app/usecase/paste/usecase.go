@@ -2,6 +2,7 @@ package pasteusecase
 
 import (
 	"errors"
+	"time"
 
 	pastedto "github.com/thansetan/kopas/internal/app/delivery/http/paste/dto"
 	"github.com/thansetan/kopas/internal/domain/model"
@@ -10,8 +11,8 @@ import (
 )
 
 type PasteUsecase interface {
-	NewPaste(data pastedto.Paste) (string, error)
-	GetPasteByID(id string) (*pastedto.Paste, error)
+	NewPaste(data pastedto.PasteReq) (string, error)
+	GetPasteByID(id string) (*pastedto.PasteResp, error)
 }
 
 type pasteUsecase struct {
@@ -24,10 +25,18 @@ func NewPasteUsecase(repo repository.PasteRepository) PasteUsecase {
 	}
 }
 
-func (uc *pasteUsecase) NewPaste(data pastedto.Paste) (string, error) {
+func (uc *pasteUsecase) NewPaste(data pastedto.PasteReq) (string, error) {
 	pasteData := model.Paste{
 		Title:   []byte(data.Title),
 		Content: []byte(data.Content),
+	}
+
+	expDur := helpers.GetTTL(data.ExpiresAt)
+	switch expDur {
+	case 0:
+		pasteData.ExpiresAt = 0
+	default:
+		pasteData.ExpiresAt = time.Now().Add(expDur).Unix()
 	}
 
 	if !helpers.ValidSize(pasteData.Content) {
@@ -41,15 +50,16 @@ func (uc *pasteUsecase) NewPaste(data pastedto.Paste) (string, error) {
 	return id, nil
 }
 
-func (uc *pasteUsecase) GetPasteByID(id string) (*pastedto.Paste, error) {
+func (uc *pasteUsecase) GetPasteByID(id string) (*pastedto.PasteResp, error) {
 	data, err := uc.repo.GetByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	pasteData := pastedto.Paste{
-		Title:   string(data.Title),
-		Content: string(data.Content),
+	pasteData := pastedto.PasteResp{
+		Title:     string(data.Title),
+		Content:   string(data.Content),
+		ExpiresAt: data.ExpiresAt,
 	}
 
 	return &pasteData, nil

@@ -50,7 +50,13 @@ func (repo *pasteRepository) Insert(data model.Paste) (string, error) {
 		return "", err
 	}
 
-	err = txn.Set([]byte(id), b.Bytes())
+	e := &badger.Entry{
+		Key:       []byte(id),
+		Value:     b.Bytes(),
+		ExpiresAt: uint64(data.ExpiresAt),
+	}
+
+	err = txn.SetEntry(e)
 	if err != nil {
 		return "", err
 	}

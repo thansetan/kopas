@@ -15,11 +15,21 @@
 
 <body>
     <h1>Title: {{.title}}</h1>
+    <p>Will be deleted in: <b><a id="expAt">{{.expiresAt}}</a></b></p>
     <button onclick="copyToClipboard()">Copy</button>
     <h1>Content: </h1>
     <div class="content" id="content">{{.content}}</div>
 
     <script>
+
+        let unix = document.getElementById("expAt")
+        unix = parseInt(unix.innerText)
+        if (unix === 0) {
+            document.getElementById("expAt").innerText = "never"
+        } else {
+            document.getElementById("expAt").innerText = timeDifference(unix)
+        }
+
         function copyToClipboard() {
             let content = document.getElementById("content")
             let textToCopy = content.innerText
@@ -33,6 +43,25 @@
 
             document.body.removeChild(textarea)
             window.alert("copied!")
+        }
+
+        function timeDifference(timestamp) {
+            const futureDate = new Date(timestamp * 1000);
+            const currentDate = new Date();
+
+            const timeDifferenceMs = futureDate - currentDate;
+
+            const minutes = Math.floor(timeDifferenceMs / (1000 * 60));
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) {
+                return `${days} day${days > 1 ? 's' : ''}`;
+            } else if (hours > 0) {
+                return `${hours} hour${hours > 1 ? 's' : ''}`;
+            } else {
+                return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+            }
         }
     </script>
 </body>
