@@ -1,9 +1,12 @@
 package pasteusecase
 
 import (
+	"errors"
+
 	pastedto "github.com/thansetan/kopas/internal/app/delivery/http/paste/dto"
 	"github.com/thansetan/kopas/internal/domain/model"
 	"github.com/thansetan/kopas/internal/domain/repository"
+	"github.com/thansetan/kopas/internal/helpers"
 )
 
 type PasteUsecase interface {
@@ -25,6 +28,10 @@ func (uc *pasteUsecase) NewPaste(data pastedto.Paste) (string, error) {
 	pasteData := model.Paste{
 		Title:   []byte(data.Title),
 		Content: []byte(data.Content),
+	}
+
+	if !helpers.ValidSize(pasteData.Content) {
+		return "", errors.New("size can't be more than 20MB")
 	}
 
 	id, err := uc.repo.Insert(pasteData)
