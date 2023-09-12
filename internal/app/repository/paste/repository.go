@@ -2,6 +2,7 @@ package pasterepository
 
 import (
 	"bytes"
+	"context"
 	"encoding/gob"
 	"errors"
 
@@ -21,7 +22,7 @@ func NewPasteRepository(db *badger.DB) repository.PasteRepository {
 	}
 }
 
-func (repo *pasteRepository) Insert(data model.Paste) (string, error) {
+func (repo *pasteRepository) Insert(ctx context.Context, data model.Paste) (string, error) {
 	txn := repo.db.NewTransaction(true)
 	defer txn.Discard()
 
@@ -31,8 +32,8 @@ func (repo *pasteRepository) Insert(data model.Paste) (string, error) {
 	}
 
 	var generateIDCount int
-	_, exists := repo.GetByID(id) // check if paste with generated ID already exists
-	for exists == nil {           // no error means the paste exists
+	_, exists := repo.GetByID(ctx, id) // check if paste with generated ID already exists
+	for exists == nil {                // no error means the paste exists
 		if generateIDCount > 4 {
 			return "", errors.New("failed to generate ID")
 		}
@@ -40,7 +41,7 @@ func (repo *pasteRepository) Insert(data model.Paste) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		_, exists = repo.GetByID(id) // check again
+		_, exists = repo.GetByID(ctx, id) // check again
 		generateIDCount++
 	}
 
@@ -68,7 +69,7 @@ func (repo *pasteRepository) Insert(data model.Paste) (string, error) {
 	return id, nil
 }
 
-func (repo *pasteRepository) GetByID(id string) (*model.Paste, error) {
+func (repo *pasteRepository) GetByID(ctx context.Context, id string) (*model.Paste, error) {
 	pasteData := new(model.Paste)
 
 	err := repo.db.View(func(txn *badger.Txn) error {

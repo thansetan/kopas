@@ -1,8 +1,12 @@
 package repository
 
-import "github.com/thansetan/kopas/internal/domain/model"
+import (
+	"context"
+
+	"github.com/thansetan/kopas/internal/domain/model"
+)
 
 type PasteRepository interface {
-	Insert(model.Paste) (string, error)
-	GetByID(string) (*model.Paste, error)
+	Insert(context.Context, model.Paste) (string, error)
+	GetByID(context.Context, string) (*model.Paste, error)
 }

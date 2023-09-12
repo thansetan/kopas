@@ -1,9 +1,11 @@
 package pasteusecase
 
 import (
+	"context"
 	"errors"
 	"time"
 
+	"github.com/dgraph-io/badger/v4"
 	pastedto "github.com/thansetan/kopas/internal/app/delivery/http/paste/dto"
 	"github.com/thansetan/kopas/internal/domain/model"
 	"github.com/thansetan/kopas/internal/domain/repository"
@@ -11,8 +13,8 @@ import (
 )
 
 type PasteUsecase interface {
-	NewPaste(data pastedto.PasteReq) (string, error)
-	GetPasteByID(id string) (*pastedto.PasteResp, error)
+	NewPaste(context.Context, pastedto.PasteReq) (string, error)
+	GetPasteByID(context.Context, string) (*pastedto.PasteResp, error)
 }
 
 type pasteUsecase struct {
@@ -25,7 +27,7 @@ func NewPasteUsecase(repo repository.PasteRepository) PasteUsecase {
 	}
 }
 
-func (uc *pasteUsecase) NewPaste(data pastedto.PasteReq) (string, error) {
+func (uc *pasteUsecase) NewPaste(ctx context.Context, data pastedto.PasteReq) (string, error) {
 	pasteData := model.Paste{
 		Title:   []byte(data.Title),
 		Content: []byte(data.Content),
@@ -43,16 +45,19 @@ func (uc *pasteUsecase) NewPaste(data pastedto.PasteReq) (string, error) {
 		return "", errors.New("size can't be more than 20MB")
 	}
 
-	id, err := uc.repo.Insert(pasteData)
+	id, err := uc.repo.Insert(ctx, pasteData)
 	if err != nil {
 		return "", err
 	}
 	return id, nil
 }
 
-func (uc *pasteUsecase) GetPasteByID(id string) (*pastedto.PasteResp, error) {
-	data, err := uc.repo.GetByID(id)
+func (uc *pasteUsecase) GetPasteByID(ctx context.Context, id string) (*pastedto.PasteResp, error) {
+	data, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			return nil, errors.New("paste with specified ID can't be found")
+		}
 		return nil, err
 	}
 

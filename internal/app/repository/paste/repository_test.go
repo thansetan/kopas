@@ -1,6 +1,7 @@
 package pasterepository
 
 import (
+	"context"
 	"testing"
 
 	"github.com/dgraph-io/badger/v4"
@@ -35,7 +36,9 @@ Sed suscipit vel ante non luctus. Etiam et mattis ex.`
 	}
 
 	t.Run("add new paste", func(t *testing.T) {
-		pasteID, err := repo.Insert(data)
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		pasteID, err := repo.Insert(ctx, data)
 		if err != nil {
 			t.Error("failed to insert data, err: ", err)
 		}
@@ -43,8 +46,10 @@ Sed suscipit vel ante non luctus. Etiam et mattis ex.`
 	})
 
 	t.Run("get inserted paste", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 		pasteData := new(model.Paste)
-		pasteData, err := repo.GetByID(id)
+		pasteData, err := repo.GetByID(ctx, id)
 		if err != nil {
 			t.Error("failed to get paste data, err: ", err)
 		}
@@ -54,8 +59,10 @@ Sed suscipit vel ante non luctus. Etiam et mattis ex.`
 	})
 
 	t.Run("get non-existent paste", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 		pasteData := new(model.Paste)
-		pasteData, err := repo.GetByID("")
+		pasteData, err := repo.GetByID(ctx, "")
 		if err == nil {
 			t.Errorf("test failed, expected: nothing, but got: %s\n", pasteData.Content)
 		}

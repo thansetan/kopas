@@ -1,8 +1,10 @@
 package pastehandler
 
 import (
+	"errors"
 	"net/http"
 
+	"github.com/dgraph-io/badger/v4"
 	"github.com/gin-gonic/gin"
 	pastedto "github.com/thansetan/kopas/internal/app/delivery/http/paste/dto"
 	pasteusecase "github.com/thansetan/kopas/internal/app/usecase/paste"
@@ -31,15 +33,13 @@ func (h *pasteHandler) InsertPaste(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
-		return
 	}
 
-	id, err := h.uc.NewPaste(pasteData)
+	id, err := h.uc.NewPaste(c, pasteData)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
-		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
@@ -50,11 +50,13 @@ func (h *pasteHandler) InsertPaste(c *gin.Context) {
 func (h *pasteHandler) GetPasteByID(c *gin.Context) {
 	id := c.Param("id")
 
-	data, err := h.uc.GetPasteByID(id)
+	data, err := h.uc.GetPasteByID(c, id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		errCode := http.StatusInternalServerError
+		if errors.Is(err, badger.ErrKeyNotFound) {
+			errCode = http.StatusNotFound
+		}
+		c.String(errCode, "%s", err.Error())
 		return
 	}
 
