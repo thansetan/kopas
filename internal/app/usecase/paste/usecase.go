@@ -28,9 +28,13 @@ func NewPasteUsecase(repo repository.PasteRepository) PasteUsecase {
 }
 
 func (uc *pasteUsecase) NewPaste(ctx context.Context, data pastedto.PasteReq) (string, error) {
+	compressedContent, err := helpers.Compress([]byte(data.Content))
+	if err != nil {
+		return "", err
+	}
 	pasteData := model.Paste{
 		Title:   []byte(data.Title),
-		Content: []byte(data.Content),
+		Content: compressedContent,
 	}
 
 	expDur := helpers.GetTTL(data.ExpiresAt)
@@ -61,9 +65,13 @@ func (uc *pasteUsecase) GetPasteByID(ctx context.Context, id string) (*pastedto.
 		return nil, err
 	}
 
+	decompressedContent, err := helpers.Decompress(data.Content)
+	if err != nil {
+		return nil, err
+	}
 	pasteData := pastedto.PasteResp{
 		Title:     string(data.Title),
-		Content:   string(data.Content),
+		Content:   string(decompressedContent),
 		ExpiresAt: data.ExpiresAt,
 	}
 
