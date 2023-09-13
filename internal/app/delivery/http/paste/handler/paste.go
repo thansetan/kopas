@@ -33,6 +33,7 @@ func (h *pasteHandler) InsertPaste(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	id, err := h.uc.NewPaste(c, pasteData)
@@ -40,6 +41,7 @@ func (h *pasteHandler) InsertPaste(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusCreated, gin.H{

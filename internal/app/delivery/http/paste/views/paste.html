@@ -46,6 +46,7 @@
         }
 
         function timeDifference(timestamp) {
+            let res = ""
             const futureDate = new Date(timestamp * 1000);
             const currentDate = new Date();
 
@@ -55,13 +56,16 @@
             const hours = Math.floor(minutes / 60);
             const days = Math.floor(hours / 24);
 
-            if (days > 0) {
-                return `${days} day${days > 1 ? 's' : ''}`;
-            } else if (hours > 0) {
-                return `${hours} hour${hours > 1 ? 's' : ''}`;
-            } else {
-                return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+            switch (true) {
+                case days > 0:
+                    res += `${days} day${days > 1 ? 's' : ''} `;
+                case hours > 0:
+                    res += `${hours - (24 * days)} hour${hours - (24 * days) > 1 ? 's' : ''} `;
+                default:
+                    res += `${minutes - (60 * hours)} minute${minutes - (60 * hours) > 1 ? 's' : ''}`;
+                    break;
             }
+            return res
         }
     </script>
 </body>
