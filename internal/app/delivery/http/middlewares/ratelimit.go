@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -21,7 +22,6 @@ func newBucket(limit int, interval time.Duration) *bucket {
 		interval: interval,
 		lastUsed: time.Now(),
 	}
-	go bucket.refill()
 	return bucket
 }
 
@@ -31,15 +31,14 @@ func (b *bucket) take() {
 }
 
 func (b *bucket) allow() bool {
+	b.refill() // this will only refill the bucket if the interval has passed
 	return b.token > 0
 }
 
-func (b *bucket) refill() bool {
-	for {
-		now := time.Now()
-		if now.Sub(b.lastUsed) > b.interval {
-			b.token = b.maxToken
-		}
+func (b *bucket) refill() {
+	now := time.Now()
+	if now.Sub(b.lastUsed) > b.interval {
+		b.token = b.maxToken
 	}
 }
 
@@ -62,6 +61,7 @@ func (rl *rateLimiter) RateLimitMiddleware() gin.HandlerFunc {
 		value, _ := rl.ipMap.LoadOrStore(ip, newBucket(rl.limit, rl.interval))
 
 		data, ok := value.(*bucket)
+		fmt.Println(data)
 		if !ok {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
