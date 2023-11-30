@@ -45,7 +45,7 @@ func (uc *pasteUsecase) NewPaste(ctx context.Context, data pastedto.PasteReq) (s
 		pasteData.ExpiresAt = time.Now().Add(expDur).Unix()
 	}
 
-	if !helpers.ValidSize(pasteData.Content) {
+	if !helpers.IsValidSize(pasteData.Content) {
 		return "", errors.New("size can't be more than 20MB")
 	}
 
@@ -60,7 +60,7 @@ func (uc *pasteUsecase) GetPasteByID(ctx context.Context, id string) (*pastedto.
 	data, err := uc.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, badger.ErrKeyNotFound) {
-			return nil, errors.New("paste with specified ID can't be found")
+			return nil, helpers.ErrNotFound
 		}
 		return nil, err
 	}

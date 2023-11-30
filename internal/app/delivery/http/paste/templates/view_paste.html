@@ -1,0 +1,19 @@
+{{ define "view_paste" }}
+{{ template "upper" }}
+<style>
+    .content {
+        white-space: pre-line;
+        border: 2px solid black;
+        overflow-x: auto;
+        max-height: 57vh;
+        overflow-y: auto;
+    }
+</style>
+<h1>Title: {{.title}}</h1>
+<p>Will be deleted in: <b>{{ .ExpiresIn }}</b></p>
+<button
+    _="on click writeText(#content.innerText) on navigator.clipboard put 'Copied!' into me wait 1s put 'Copy' into me">Copy</button>
+<h1>Content: </h1>
+<div class="content" id="content">{{.content}}</div>
+{{ template "lower" }}
+{{ end }}

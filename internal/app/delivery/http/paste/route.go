@@ -25,7 +25,7 @@ func Route(r *gin.Engine, db *badger.DB) {
 		panic(err)
 	}
 
-	r.LoadHTMLGlob(fmt.Sprintf("%s/views/*", dir))
+	r.LoadHTMLGlob(fmt.Sprintf("%s/templates/*", dir))
 
 	r.GET("", handler.NewPaste)
 	r.GET("/:id", handler.GetPasteByID)

@@ -1,0 +1,32 @@
+{{ define "new_paste" }}
+{{ template "upper" }}
+<form hx-post="/paste">
+    <label for="title">Title:</label>
+    <input type="text" id="title" name="title" required><br>
+    <label for="content">Content:</label><br>
+    <textarea id="content" name="content" rows="25" cols="150" required></textarea><br>
+    <label for="expires_at">Expires in:</label>
+    <select name="expires_at" id="expires_at">
+        <option value="minute">10 Minutes</option>
+        <option value="hour">1 Hour</option>
+        <option value="day">1 Day</option>
+        <option value="week">1 Week</option>
+        <option value="never">Never</option>
+    </select>
+    <div>
+        <input type="submit" value="Create">
+    </div>
+</form>
+<script>
+    document.addEventListener("htmx:afterRequest", (e) => {
+        if (e.detail.xhr.status === 429) {
+            return alert("Too many requests, try again later")
+        }
+
+        if (e.detail.xhr.status !== 201) {
+            return alert("Something went wrong")
+        }
+    })
+</script>
+{{ template "lower" }}
+{{ end }}

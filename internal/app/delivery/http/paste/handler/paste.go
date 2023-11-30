@@ -2,12 +2,14 @@ package pastehandler
 
 import (
 	"errors"
+	"html/template"
 	"net/http"
+	"strings"
 
-	"github.com/dgraph-io/badger/v4"
 	"github.com/gin-gonic/gin"
 	pastedto "github.com/thansetan/kopas/internal/app/delivery/http/paste/dto"
 	pasteusecase "github.com/thansetan/kopas/internal/app/usecase/paste"
+	"github.com/thansetan/kopas/internal/helpers"
 )
 
 type PasteHandler interface {
@@ -44,6 +46,7 @@ func (h *pasteHandler) InsertPaste(c *gin.Context) {
 		return
 	}
 
+	c.Header("HX-Redirect", id)
 	c.JSON(http.StatusCreated, gin.H{
 		"id": id,
 	})
@@ -55,11 +58,28 @@ func (h *pasteHandler) GetPasteByID(c *gin.Context) {
 	data, err := h.uc.GetPasteByID(c, id)
 	if err != nil {
 		errCode := http.StatusInternalServerError
-		if errors.Is(err, badger.ErrKeyNotFound) {
+		if errors.Is(err, helpers.ErrNotFound) {
 			errCode = http.StatusNotFound
 		}
+
+		if strings.Contains(c.Request.Header.Get("Accept"), "text/html") && errCode == http.StatusNotFound {
+			c.HTML(errCode, "not_found", nil)
+			return
+		}
 		c.String(errCode, "%s", err.Error())
+
 		return
+	}
+
+	htmlData := gin.H{
+		"title":     data.Title,
+		"content":   data.Content,
+		"ExpiresIn": helpers.GetRemainingTime(data.ExpiresAt),
+	}
+	content, ok := helpers.HighlightCode(data.Content)
+
+	if ok {
+		htmlData["content"] = template.HTML(content)
 	}
 
 	switch c.Request.Header.Get("Accept") {
@@ -68,14 +88,12 @@ func (h *pasteHandler) GetPasteByID(c *gin.Context) {
 			"data": data,
 		})
 	default:
-		c.HTML(http.StatusOK, "paste.html", gin.H{
-			"title":     data.Title,
-			"content":   data.Content,
-			"expiresAt": data.ExpiresAt,
-		})
+		c.HTML(http.StatusOK, "view_paste", htmlData)
 	}
 }
 
 func (h *pasteHandler) NewPaste(c *gin.Context) {
-	c.HTML(http.StatusOK, "new.html", nil)
+	c.HTML(http.StatusOK, "new_paste", gin.H{
+		"content": "new_paste",
+	})
 }

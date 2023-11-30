@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -61,7 +60,6 @@ func (rl *rateLimiter) RateLimitMiddleware() gin.HandlerFunc {
 		value, _ := rl.ipMap.LoadOrStore(ip, newBucket(rl.limit, rl.interval))
 
 		data, ok := value.(*bucket)
-		fmt.Println(data)
 		if !ok {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
